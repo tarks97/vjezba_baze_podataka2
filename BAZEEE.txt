@@ -1,0 +1,355 @@
+USE AdventureWorks2014
+
+
+--video ¸1
+
+
+-- upit 1
+SELECT ProductNumber, Name, Color, ListPrice
+FROM Production.Product
+WHERE Name LIKE '[ST]%'  AND  Color IN('Blue', 'Black') AND ListPrice BETWEEN 100 and 1000
+ORDER BY ListPrice DESC
+
+
+
+SELECT ProductNumber, Name, Color, ListPrice
+FROM Production.Product
+WHERE (Name LIKE 'S%' OR Name LIKE 'T%') AND (Color LIKE 'Blue' OR Color LIKE 'Black')
+           AND  (ListPrice >=100 AND ListPrice <= 1000)
+ORDER BY ListPrice DESC
+
+
+
+--upit 2
+
+SELECT SalesOrderNumber, CONVERT(nvarchar, OrderDate, 104) AS 'datum narudzbe' , TotalDue
+FROM Sales.SalesOrderHeader
+WHERE OrderDate BETWEEN '2011/7/1' AND '2011/12/31' AND TotalDue > 100000
+
+
+
+
+
+--upit 3
+
+SELECT FirstName + ' ' + LastName AS 'Ime i prezime',
+       ISNULL (Title, 'N/A') AS 'Titula'
+FROM Person.Person
+WHERE MiddleName is NULL
+
+
+
+
+-- upit 4
+
+
+SELECT TOP 10 
+  SUBSTRING(LoginID, CHARINDEX('\', LoginID)+1, 50) AS  'Korisnicko ime',
+              JobTitle, 
+			 DATEDIFF(YEAR,BirthDate, GETDATE()) AS 'starost zaposlenika',
+			 DATEDIFF(YEAR, HireDate, GETDATE()) AS 'staz zaposlenika'
+FROM  HumanResources.Employee
+WHERE JobTitle LIKE '%Manager%'
+ORDER BY [starost zaposlenika] DESC
+
+
+
+-- upit 5
+
+SELECT TOP 10 ProductID, 
+        CONVERT(nvarchar, OrderQty)+ ' kom',
+		CONVERT(nvarchar, ROUND(UnitPrice, 2)) + ' KM' AS 'Cijena',
+		CONVERT(nvarchar,ROUND(OrderQty* UnitPrice, 2))+ ' KM' AS 'iznos'
+FROM Sales.SalesOrderDetail
+ ORDER BY ROUND(OrderQty* UnitPrice, 2)  DESC
+
+
+
+ --video 2
+
+ USE NORTHWND
+
+
+
+ SELECT  CompanyName, 
+         City,
+		 Fax
+ FROM  Customers
+ WHERE (CompanyName LIKE '%Restaurant%' OR City = 'Madrid') AND Fax IS NOT NULL
+
+
+
+
+ --upit 2
+
+ SELECT   ContactName, 
+          Country, 
+		  CompanyName 
+ FROM dbo.Suppliers
+ WHERE Country IN ('Germany','France') AND  CompanyName LIKE '[AEP]%'
+
+
+
+
+ 
+
+--upit 3
+USE pubs
+
+SELECT   title, 
+         type,
+		 price,
+		 price - (price*0.2) AS 'popust'
+FROM dbo.titles
+WHERE    price - (price*0.2) BETWEEN 10 AND 20 
+ORDER BY type ASC,  popust DESC 
+
+
+
+--upit 4
+
+USE AdventureWorks2014
+
+SELECT   MIN(ListPrice) AS 'min cijenap',
+         AVG(ListPrice) AS 'srednja cijena',
+		 MAX(ListPrice) AS 'max cijenap'
+FROM Production.Product
+
+
+
+
+--upit 5
+
+SELECT 
+       ProductID,
+       SUM(OrderQty*UnitPrice) AS zaradjeno 
+FROM Sales.SalesOrderDetail
+GROUP BY ProductID
+HAVING  SUM(OrderQty*UnitPrice) < '30000'
+
+
+
+--upit 7
+ 
+SELECT  'Dobrodosli, '+  FirstName + ' '+LastName + ' , trenutno vrijeme je: ' 
++ RIGHT(CONVERT(nvarchar(20),GETDATE()),7)
+FROM Person.Person
+ 
+
+
+ --upit 8
+
+
+
+ USE NORTHWND
+
+ SELECT 
+        LOWER(LastName + '.' + FirstName +'@' + City +'.com') AS Email,
+	RIGHT(REPLACE(SUBSTRING(REVERSE(CONVERT(nvarchar, Notes)+  Title + Address), 10,15), ' ', '#'), 8)  AS lozinka,
+		DATEPART(YEAR, GETDATE())- DATEPART(YEAR, BirthDate) AS Starost,
+		DATEDIFF(YEAR, BirthDate, GETDATE()) AS starost2
+ FROM Employees
+
+
+ --video 3
+
+
+ --upit 1
+
+ USE AdventureWorks2014
+
+ SELECT  TerritoryID, COUNT(CustomerID) AS UkupnoKupaca
+ FROM Sales.Customer	
+ GROUP BY TerritoryID
+ HAVING COUNT(CustomerID) > 1000
+
+
+
+
+
+
+ --upit 2
+
+ SELECT  ProductModelID, COUNT(ProductID) AS Ukupno
+ FROM Production.Product
+ WHERE Name LIKE 'S%' AND ProductModelID IS NOT NULL
+ GROUP BY ProductModelID
+ HAVING COUNT(ProductID) > 1
+
+
+ --upit 3
+
+ SELECT TOP 10 WITH TIES ProductID, SUM(OrderQty) AS 'Ukupna Kolicina Prodaje'
+ FROM Sales.SalesOrderDetail
+ GROUP BY ProductID
+ ORDER BY 2 DESC
+
+
+
+ --UPIT 4
+ USE AdventureWorks2014
+
+ SELECT ProductID,
+      ROUND(SUM(OrderQty * UnitPrice),2) AS Zarada, 
+	   ROUND(SUM(  OrderQty*UnitPrice *UnitPriceDiscount),2) AS popust,
+	  ROUND(SUM(OrderQty * UnitPrice)- SUM(  OrderQty*UnitPrice *UnitPriceDiscount),2) AS 'zarada s popustom',
+	  ROUND(SUM(LineTotal),2) AS total2
+ FROM Sales.SalesOrderDetail
+ GROUP BY ProductID
+ HAVING SUM(UnitPriceDiscount) >0
+ ORDER BY 2 DESC
+
+  --upit 5
+
+
+  SELECT 
+         MONTH(OrderDate) AS mjeseci,
+		 MIN(TotalDue) AS minimalno,
+		 MAX(TotalDue) AS maximalno,
+		 AVG(TotalDue) AS prosjecno
+  FROM Sales.SalesOrderHeader
+  WHERE YEAR(OrderDate) ='2013'
+  GROUP BY MONTH(OrderDate)
+  ORDER BY 1
+
+
+
+
+
+  --video 4
+
+  --zadatak 1
+
+  USE NORTHWND
+
+
+  SELECT E.FirstName + ' '+ E.LastName AS 'IME I PREZIME', 
+        COUNT(E.EmployeeID) AS 'ukupno narudzbi'
+  FROM Employees AS E INNER JOIN Orders AS O
+       ON E.EmployeeID = O.EmployeeID
+GROUP BY E.FirstName, E.LastName
+ORDER BY 2 DESC
+
+
+--PRIMJER 2
+
+
+  SELECT E.FirstName + ' '+ E.LastName AS 'IME I PREZIME', 
+        COUNT(E.EmployeeID) AS 'ukupno narudzbi'
+  FROM Employees AS E INNER JOIN Orders AS O
+       ON E.EmployeeID = O.EmployeeID
+	   WHERE DATEPART(MONTH, O.OrderDate)=7 AND DATEPART(YEAR, O.OrderDate)=1997
+GROUP BY E.FirstName, E.LastName
+HAVING COUNT(E.EmployeeID) >4
+ORDER BY 2 DESC
+
+
+
+--ZADATAK 2
+
+SELECT S.CompanyName AS Dobavljac,
+       S.Phone AS telefon, 
+	   P.ProductName AS imeP, 
+	   P.UnitsInStock AS 'stanje zalihe',
+	   SUM(O.Quantity) AS 'prodano' 
+FROM Suppliers AS S INNER JOIN Products AS P
+     ON S.SupplierID = P.SupplierID  INNER JOIN [Order Details] AS O
+	 ON P.ProductID = O.ProductID
+	 WHERE  P.UnitsInStock= 0
+	 GROUP BY S.CompanyName, S.Phone, P.ProductName, P.UnitsInStock
+
+	 --ZADATAK 3
+
+
+
+USE pubs
+
+SELECT  P.pub_name AS 'naziv izdavaca',
+        ST.stor_name AS 'naziv prodavnice',
+	    T.title AS 'naziv knjige',
+		SUM(S.qty* T.price) AS 'zarada'
+FROM  publishers AS P INNER JOIN titles AS T
+      ON p.pub_id=T.pub_id INNER JOIN sales AS S
+	  ON T.title_id=S.title_id INNER JOIN stores AS ST
+	  ON S.stor_id=ST.stor_id
+WHERE P.pub_name = 'New Moon Books'
+GROUP BY P.pub_name, ST.stor_name, T.title
+
+
+
+	  --zadatak 4
+	  --NE PODUDARAJU SE BAZE.... 
+	  USE AdventureWorks2014
+	  /*
+SELECT   P.FirstName +' '+LastName,
+         
+FROM  Sales.Customer AS C INNER JOIN Sales.SalesOrderHeader AS SOH
+      ON C.CustomerID=SOH.CustomerID INNER JOIN Sales.SalesOrderDetail AS SOD
+	  ON SOH.SalesOrderID=SOD.SalesOrderDetailID INNER JOIN Sales.SalesTerritory AS ST
+	  ON C.TerritoryID=ST.TerritoryID INNER JOIN Sales.SalesTerritoryHistory AS NBT
+	  ON C.TerritoryID= NBT.TerritoryID INNER JOIN Person.Person AS P
+	  ON NBT.BusinessEntityID=P.BusinessEntityID
+	  */
+
+
+
+	  --ZADATAK 5
+
+	  USE AdventureWorks2014
+
+SELECT  P.FirstName + ' ' + P.LastName AS Ime,
+        SCC.CardType AS 'Tip Kartice',
+		SCC.CardNumber AS 'broj Kartice',
+		SSOH.OrderDate AS 'datum narudzbe',
+		SSOH.SalesOrderNumber AS 'broj narudzbe'
+FROM Sales.Customer AS C INNER JOIN Person.Person AS P
+     ON C.PersonID=P.BusinessEntityID INNER JOIN Sales.PersonCreditCard AS PCC
+	 ON P.BusinessEntityID=PCC.BusinessEntityID  INNER JOIN Sales.CreditCard AS SCC
+	 ON PCC.CreditCardID=SCC.CreditCardID INNER JOIN Sales.SalesOrderHeader AS SSOH
+	 ON SCC.CreditCardID=SSOH.CreditCardID
+WHERE P.FirstName + ' ' + P.LastName ='Jordan Green'
+
+
+
+--video 5
+
+--zadatak 1
+
+USE NORTHWND
+
+SELECT TOP 1 C.ContactName AS 'Ime i Prezime',
+        C.Address,
+		C.Phone, 
+		SUM(OD.UnitPrice*OD.Quantity) AS 'ukupno utroseno'
+FROM Customers AS C INNER JOIN Orders AS O
+     ON C.CustomerID=O.CustomerID INNER JOIN [Order Details] AS OD
+	 ON O.OrderID=OD.OrderID
+WHERE  DATEPART(MONTH, O.OrderDate)= 2 AND  C.City LIKE 'London' 
+GROUP BY C.ContactName, C.Address, C.Phone
+ORDER BY 4 DESC
+
+
+--video 7
+
+
+
+
+
+
+
+--ispitni zad
+
+
+
+
+CREATE DATABASE IB1600977
+USE IB1600977
+
+
+CREATE TABLE
+	produktID  INT  coinstraint PRIMARY KEY,
+	jed_cijena money,
+	kateg_naziv nvarchar [15],
+	mj_jedinica nvarchar[20],
+	dobavljac_naziv nvarchar[40],
+	dobavljac_post_br nvarchar[10]
